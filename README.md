@@ -7,4 +7,5 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
      cam.zoom_cam(10).await?;
 
      Ok(())
-}```
+}
+```
