@@ -10,3 +10,7 @@ description = "High-level asynchronous library for controlling cameras from Hikv
 [dependencies]
 reqwest = "0.12.0"
 tokio = { version = "1.36.0", features = ["full"] }
+
+
+[lib]
+name = "hikvision"
