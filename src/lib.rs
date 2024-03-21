@@ -246,15 +246,3 @@ impl Cam {
         self.movement_speed = ms;
     }
 }
-
-
-#[cfg(test)]
-mod test {
-    use crate::*;
-
-
-    #[tokio::test]
-    async fn testing() {
-        let cam = Cam::new(addr, user_passwd, movment_speed_ms)
-    }
-}
