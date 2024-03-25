@@ -36,7 +36,7 @@ impl TypeEvent {
 
 
 struct CamParam {
-    data: isize,
+    data: i8,
     is_init: bool,
     last_trigger: time::Instant,
 }
@@ -113,7 +113,7 @@ impl Cam {
             </PTZData>", self.pan.data, self.tilt.data, self.zoom.data, self.movement_speed)).send().await
     }
 
-    async fn cam_event(&mut self, unit: isize, type_event: TypeEvent) -> Result<Response, Box<dyn std::error::Error>>{
+    async fn cam_event(&mut self, unit: i8, type_event: TypeEvent) -> Result<Response, Box<dyn std::error::Error>>{
         if unit > 100 || unit < -100 {
             return Err(Box::new(error::OutOfRangeUnitError::new(unit, type_event)));   
         }
@@ -135,7 +135,7 @@ impl Cam {
             event.last_trigger = time::Instant::now();
         }
 
-        event.data += unit;
+        event.data = unit;
 
         return match self.send_data().await {
             Ok(res) => Ok(res), 
@@ -144,18 +144,21 @@ impl Cam {
     }
 
     /// Rotate the camera, `rot` can vary -100..=100
-    pub async fn rotate_cam(&mut self, rot: isize) -> Result<Response, Box<dyn std::error::Error>> {
-        self.cam_event(rot, TypeEvent::Rotate).await
+    pub async fn rotate_cam(&mut self, rot: i8) {
+        self.cam_event(rot, TypeEvent::Rotate).await.expect("Failed to rotate camera");
+        self.pan.data = 0;
     }
 
     /// Zoom the camera lens, `zoom` can vary from -100..=100 
-    pub async fn zoom_cam(&mut self, zoom: isize) -> Result<Response, Box<dyn std::error::Error>> {
-        self.cam_event(zoom, TypeEvent::Zoom).await
+    pub async fn zoom_cam(&mut self, zoom: i8) {
+        self.cam_event(zoom, TypeEvent::Zoom).await.expect("Failed to rotate camera");
+        self.zoom.data = 0;
     }
 
     /// Tilt the camera, `til` can vary from -100..=100 
-    pub async fn tilt_cam(&mut self, til: isize) -> Result<Response, Box<dyn std::error::Error>> {
-        self.cam_event(til, TypeEvent::Tilt).await
+    pub async fn tilt_cam(&mut self, til: i8) {
+        self.cam_event(til, TypeEvent::Tilt).await.expect("Failed to rotate camera");
+        self.tilt.data = 0;
     }
 
     pub async fn change_movement_speed(&mut self, ms: usize) {

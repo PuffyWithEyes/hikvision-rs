@@ -58,13 +58,13 @@ impl fmt::Debug for QuickRequsetError {
 
 /// Any action is allowed only in the range -100..=100 units of measurement
 pub struct OutOfRangeUnitError {
-    data: isize,
+    data: i8,
     event: TypeEvent,
 }
 
 
 impl OutOfRangeUnitError {
-    pub(crate) fn new(_data: isize, _event: TypeEvent) -> Self {
+    pub(crate) fn new(_data: i8, _event: TypeEvent) -> Self {
         Self {
             data: _data,
             event: _event,
