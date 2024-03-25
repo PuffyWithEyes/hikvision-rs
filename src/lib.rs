@@ -4,15 +4,35 @@
 //! ```rust
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!     let mut cam = hikvision_rs::Cam::new("127.0.0.1", Some("admin", "12345"), 500).await?;
+//!     let mut cam = hikvision_rs::Cam::new("127.0.0.1", "1208", Some("admin", "12345"), 500).await?;
 //!     cam.zoom_cam(10).await?;
 //! 
 //!     Ok(())
-//! }```
+//! }
+//! ```
 
 use reqwest::{Error, Response};
-use std::fmt;
 use tokio::time;
+
+pub mod error;
+
+
+enum TypeEvent {
+    Rotate,
+    Zoom,
+    Tilt,
+}
+
+
+impl TypeEvent {
+    fn get_str<'a>(&'a self) -> &'a str {
+        match self {
+            Self::Rotate => "rotation",
+            Self::Zoom => "zoom",
+            Self::Tilt => "tilt",
+        }
+    }
+}
 
 
 struct CamParam {
@@ -44,136 +64,32 @@ pub struct Cam {
 }
 
 
-/// `ErrorAuthorize`, usually occurs when the login or password is incorrect or due to the lack of certain access rights to the camera
-pub struct ErrorAuthorize;
-
-
-impl std::error::Error for ErrorAuthorize {} 
-
-
-impl fmt::Display for ErrorAuthorize {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Failed to log in and access the camera. Check that your login and password are correct, and also check on the website in the Configuration -> System -> Authentication -> Web Authentication section, the value should be set to digest/basic. Also check Configuration -> PTZ -> Enable PTZ Control, this item should be checked")
-    }
-}
-
-
-impl fmt::Debug for ErrorAuthorize {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Failed to log in and access the camera. Check that your login and password are correct, and also check on the website in the Configuration -> System -> Authentication -> Web Authentication section, the value should be set to digest/basic. Also check Configuration -> PTZ -> Enable PTZ Control, this item should be checked")
-    }
-}
-
-
-enum TypeEvent {
-    Rotate,
-    Zoom,
-    Tilt,
-}
-
-
-impl TypeEvent {
-    fn get_str<'a>(&'a self) -> &'a str {
-        match self {
-            Self::Rotate => "rotation",
-            Self::Zoom => "zoom",
-            Self::Tilt => "tilt",
-        }
-    }
-}
-
-
-/// `QuickRequestError` usually occurs because you try to send the same action to the camera very quick
-pub struct QuickRequsetError {
-    timeout: usize,
-    event: TypeEvent,
-}
-
-
-impl QuickRequsetError {
-    fn new(_timeout: usize, _event: TypeEvent) -> Self {
-        Self {
-            timeout: _timeout + 50,
-            event: _event,
-        }
-    }
-}
-
-
-impl std::error::Error for QuickRequsetError {}
-
-
-impl fmt::Display for QuickRequsetError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "You are making request for the <{}> action too quickly. {}ms must have passed since the last request", self.event.get_str(), self.timeout)
-    }
-}
-
-
-impl fmt::Debug for QuickRequsetError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "You are making request for the <{}> action too quickly. {}ms must have passed since the last request", self.event.get_str(), self.timeout)
-    }
-}
-
-/// Any action is allowed only in the range -100..=100 units of measurement
-pub struct OutOfRangeUnitError {
-    data: isize,
-    event: TypeEvent,
-}
-
-
-impl OutOfRangeUnitError {
-    fn new(_data: isize, _event: TypeEvent) -> Self {
-        Self {
-            data: _data,
-            event: _event,
-        }
-    }
-}
-
-
-impl std::error::Error for OutOfRangeUnitError {}
-
-
-impl fmt::Display for OutOfRangeUnitError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "The unit of measurment for the <{}> event does ot lie in the range -100..=100, its value {}", self.event.get_str(), self.data)
-    }
-}
-
-
-impl fmt::Debug for OutOfRangeUnitError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "The unit of measurment for the <{}> event does ot lie in the range -100..=100, its value {}", self.event.get_str(), self.data)
-    }
-}
-
-
 impl Cam {
     /// Creating an object to connect to the camera. If there is no login and password, then the `user_passwd` field should have the value `None`
-    pub async fn new<S>(addr: S, user_passwd: Option<(S, S)>, movment_speed_ms: usize) -> Result<Self, Box<dyn std::error::Error>> where S: Into<String> {
+    pub async fn new<S>(addr: S, port: S, user_passwd: Option<(S, S)>, movment_speed_ms: usize) -> Result<Self, Box<dyn std::error::Error>> where S: Into<String> {
         let (addr, test_addr) = match user_passwd {
             Some((user, passwd)) => {
                 let user = user.into();
                 let passwd = passwd.into();
                 let addr = addr.into();
+                let port = port.into();
 
-                (format!("http://{}:{}@{}/ISAPI/PTZCtrl/channels/1/Momentary", user, passwd, addr),
-                format!("http://{}:{}@{}/ISAPI/PTZCtrl/channels/1/capabilities", user, passwd, addr))
+                (format!("http://{}:{}@{}:{}/ISAPI/PTZCtrl/channels/1/Momentary", user, passwd, addr, port),
+                format!("http://{}:{}@{}:{}/ISAPI/PTZCtrl/channels/1/capabilities", user, passwd, addr, port))
             },
             None => {
                 let addr = addr.into();
+                let port = port.into();
 
-                (format!("http://{}/ISAPI/PTZCtrl/channels/1/Momentary", addr),
-                format!("http://{}/ISAPI/PTZCtrl/channels/1/capabilities", addr))
+                (format!("http://{}:{}/ISAPI/PTZCtrl/channels/1/Momentary", addr, port),
+                format!("http://{}:{}/ISAPI/PTZCtrl/channels/1/capabilities", addr, port))
             },
         };
         let _client = reqwest::Client::new();
 
         let test_conn = reqwest::get(test_addr).await?.text().await?;
         return if test_conn.contains("Document Error: Unauthorized") {
-            Err(Box::new(ErrorAuthorize))
+            Err(Box::new(error::ErrorAuthorize))
         } else {
             Ok(Self {
                 address: addr,
@@ -199,7 +115,7 @@ impl Cam {
 
     async fn cam_event(&mut self, unit: isize, type_event: TypeEvent) -> Result<Response, Box<dyn std::error::Error>>{
         if unit > 100 || unit < -100 {
-            return Err(Box::new(OutOfRangeUnitError::new(unit, type_event)));   
+            return Err(Box::new(error::OutOfRangeUnitError::new(unit, type_event)));   
         }
 
         let time = time::Instant::now();
@@ -210,7 +126,7 @@ impl Cam {
         };
 
         if time.duration_since(event.last_trigger).as_millis() + 50 < time::Duration::from_millis(self.movement_speed as u64).as_millis() && !event.is_init {
-            return Err(Box::new(QuickRequsetError::new(self.movement_speed, type_event)))
+            return Err(Box::new(error::QuickRequsetError::new(self.movement_speed, type_event)))
         } else {
             if event.is_init {
                 event.is_init = false;
