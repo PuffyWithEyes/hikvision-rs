@@ -35,6 +35,7 @@ impl TypeEvent {
 }
 
 
+#[derive(Clone)]
 struct CamParam {
     data: i8,
     is_init: bool,
@@ -54,6 +55,7 @@ impl Default for CamParam {
 
 
 /// The structure of the camera allows you to communicate with it at a high level
+#[derive(Clone)]
 pub struct Cam {
     address: String,
     client: reqwest::Client,
