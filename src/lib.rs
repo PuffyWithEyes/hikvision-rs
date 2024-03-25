@@ -66,20 +66,20 @@ pub struct Cam {
 
 impl Cam {
     /// Creating an object to connect to the camera. If there is no login and password, then the `user_passwd` field should have the value `None`
-    pub async fn new<S>(addr: S, port: S, user_passwd: Option<(S, S)>, movment_speed_ms: usize) -> Result<Self, Box<dyn std::error::Error>> where S: Into<String> {
+    pub async fn new<S>(addr: S, port: usize, user_passwd: Option<(S, S)>, movment_speed_ms: usize) -> Result<Self, Box<dyn std::error::Error>> where S: Into<String> {
         let (addr, test_addr) = match user_passwd {
             Some((user, passwd)) => {
                 let user = user.into();
                 let passwd = passwd.into();
                 let addr = addr.into();
-                let port = port.into();
+                let port = port.to_string();
 
                 (format!("http://{}:{}@{}:{}/ISAPI/PTZCtrl/channels/1/Momentary", user, passwd, addr, port),
                 format!("http://{}:{}@{}:{}/ISAPI/PTZCtrl/channels/1/capabilities", user, passwd, addr, port))
             },
             None => {
                 let addr = addr.into();
-                let port = port.into();
+                let port = port.to_string();
 
                 (format!("http://{}:{}/ISAPI/PTZCtrl/channels/1/Momentary", addr, port),
                 format!("http://{}:{}/ISAPI/PTZCtrl/channels/1/capabilities", addr, port))

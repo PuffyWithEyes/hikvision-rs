@@ -1,6 +1,6 @@
 [package]
 name = "hikvision-rs"
-version = "0.0.5"
+version = "0.0.6"
 edition = "2021"
 license = "MIT"
 description = "High-level asynchronous library for controlling cameras from Hikvision using the PTZ API"
