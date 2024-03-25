@@ -144,21 +144,27 @@ impl Cam {
     }
 
     /// Rotate the camera, `rot` can vary -100..=100
-    pub async fn rotate_cam(&mut self, rot: i8) {
-        self.cam_event(rot, TypeEvent::Rotate).await.expect("Failed to rotate camera");
+    pub async fn rotate_cam(&mut self, rot: i8) -> Result<Response, Box<dyn std::error::Error>> {
+        let answer = self.cam_event(rot, TypeEvent::Rotate).await;
         self.pan.data = 0;
+
+        answer
     }
 
     /// Zoom the camera lens, `zoom` can vary from -100..=100 
-    pub async fn zoom_cam(&mut self, zoom: i8) {
-        self.cam_event(zoom, TypeEvent::Zoom).await.expect("Failed to rotate camera");
+    pub async fn zoom_cam(&mut self, zoom: i8) -> Result<Response, Box<dyn std::error::Error>> {
+        let answer = self.cam_event(zoom, TypeEvent::Zoom).await;
         self.zoom.data = 0;
+
+        answer
     }
 
     /// Tilt the camera, `til` can vary from -100..=100 
-    pub async fn tilt_cam(&mut self, til: i8) {
-        self.cam_event(til, TypeEvent::Tilt).await.expect("Failed to rotate camera");
+    pub async fn tilt_cam(&mut self, til: i8) -> Result<Response, Box<dyn std::error::Error>> {
+        let answer = self.cam_event(til, TypeEvent::Tilt).await;
         self.tilt.data = 0;
+
+        answer
     }
 
     pub async fn change_movement_speed(&mut self, ms: usize) {
