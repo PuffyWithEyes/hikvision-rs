@@ -17,6 +17,7 @@ use tokio::time;
 pub mod error;
 
 
+#[derive(Clone, Debug)]
 enum TypeEvent {
     Rotate,
     Zoom,
@@ -35,7 +36,7 @@ impl TypeEvent {
 }
 
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct CamParam {
     data: i8,
     is_init: bool,
@@ -55,7 +56,7 @@ impl Default for CamParam {
 
 
 /// The structure of the camera allows you to communicate with it at a high level
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Cam {
     address: String,
     client: reqwest::Client,
