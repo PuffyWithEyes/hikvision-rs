@@ -11,14 +11,14 @@ impl std::error::Error for ErrorAuthorize {}
 
 impl fmt::Display for ErrorAuthorize {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Failed to log in and access the camera. Check that your login and password are correct, and also check on the website in the Configuration -> System -> Authentication -> Web Authentication section, the value should be set to digest/basic. Also check Configuration -> PTZ -> Enable PTZ Control, this item should be checked")
+        write!(f, "Failed to log in and access the camera. Check that your login and password are correct, and also check on the website in the Configuration -> Video/Audio -> \"Stream Type\" must be set to \"Sub-stream\". Also on this page set the value of the \"Video Encoding\" item to MPJPEG")
     }
 }
 
 
 impl fmt::Debug for ErrorAuthorize {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Failed to log in and access the camera. Check that your login and password are correct, and also check on the website in the Configuration -> System -> Authentication -> Web Authentication section, the value should be set to digest/basic. Also check Configuration -> PTZ -> Enable PTZ Control, this item should be checked")
+        write!(f, "Failed to log in and access the camera. Check that your login and password are correct, and also check on the website in the Configuration -> Video/Audio -> \"Stream Type\" must be set to \"Sub-stream\". Also on this page set the value of the \"Video Encoding\" item to MPJPEG")
     }
 }
 
