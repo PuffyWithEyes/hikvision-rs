@@ -9,3 +9,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
      Ok(())
 }
 ```
+If the camera does not respond to your commands, then try the following:
+
+In the camera settings, set the Configuration -> PTZ -> "Basic Settings" -> "Manual Control Speed" parameter to "Compatible".
