@@ -1,0 +1,15 @@
+format_macro_matchers = true
+
+imports_granularity = "Crate"
+
+reorder_impl_items = true
+
+use_field_init_shorthand = true
+normalize_doc_attributes = true
+wrap_comments = true
+
+format_strings = true
+
+force_multiline_blocks = true
+match_block_trailing_comma = true
+use_try_shorthand = true
